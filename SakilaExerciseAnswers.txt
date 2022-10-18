@@ -1,0 +1,131 @@
+USE sakila
+
+/*1)Select all Actors from the table. */
+SELECT * FROM sakila.actor;
+
+/*2)Find the actor with the first name “John”.*/
+SELECT * FROM sakila.actor
+	WHERE first_name = 'John';
+
+/*3)Find all actors with the surname “Neeson”.*/
+SELECT * FROM sakila.actor
+	WHERE last_name = 'Neeson';
+
+/*4)Find all actors with Id numbers divisible by 10.*/
+SELECT * FROM sakila.actor
+	WHERE actor_id%10=0;
+
+/*5)What is the description of the movie with ID of 100? */
+SELECT description FROM sakila.film
+	WHERE film_id=100;
+/*Answer: A Beautiful Drama of a Dentist And a Composer who must Battle a Sumo Wrestler in The First Manned Space Station*/
+
+/*7)Find every movie except those with a rating of “R”.*/
+SELECT * FROM sakila.film
+	WHERE rating != 'R';
+
+/*8)Find all movies with Deleted Scenes.*/
+SELECT * FROM sakila.film
+	WHERE special_features LIKE '%Deleted Scenes%';
+
+/*9)Which last names are not repeated?*/
+SELECT DISTINCT last_name FROM sakila.actor;
+
+/*10)Which last names appear more than once?*/
+SELECT last_name, COUNT(last_name) FROM sakila.actor
+	GROUP BY last_name DESC;
+
+/*11)Which actor has appeared in the most films?*/
+/*sakila.actor and sakila.film_actor*/
+SELECT f.film_id, a.first_name, a.last_name FROM sakila.actor a
+	INNER JOIN sakila.film_actor f ON a.actor_id = f.actor_id;
+/*was trying to use count to figure out how many films each actor was in but was spending too much time on it*/
+
+/*12)Is ‘Academy Dinosaur’ available for rent from Store 1?*/
+SELECT * FROM sakila.inventory;		/*store_id, inventory_id, film_id*/
+SELECT * FROM sakila.rental;		/*inventory_id*/
+SELECT * FROM sakila.film;			/*film_id*/
+
+SELECT f.title, i.film_id, i.store_id, r.inventory_id
+	FROM sakila.film f
+		INNER JOIN sakila.inventory i ON i.film_id = f.film_id
+		INNER JOIN sakila.rental r ON r.inventory_id = i.inventory_id
+	WHERE f.title = 'ACADEMY DINOSAUR' AND i.store_id = 1;
+/*Answer: Academny Dinosaur is available to rent at store 1*/
+
+/*13)What is that average running time of all the films in the database?*/
+SELECT AVG(length) FROM sakila.film;
+/*Answer: 115 minutes*/
+
+/*14)What is the average running time of films by category?*/
+SELECT * FROM sakila.film;				/*film_id*/
+SELECT * FROM sakila.film_category;		/*film_id, category_id*/
+SELECT * FROM sakila.category;			/*category_id, name*/
+
+SELECT c.name, AVG(f.length) 
+	FROM sakila.film	f
+		INNER JOIN sakila.film_category fc ON fc.film_id = f.film_id
+		INNER JOIN sakila.category c ON c.category_id = fc.category_id
+	GROUP BY c.name;
+
+/*15)How many movies have Robots in them?*/
+SELECT * FROM sakila.film
+	WHERE description IN ('Robot', 'Robots', 'robot', 'robots');
+/*Answer: 0 as table returned empty*/
+
+/*16)Find the movie(s) with the longest runtime.*/
+SELECT MAX(length) FROM sakila.film;
+
+/*17)Count how many movies were released in 2010.*/
+SELECT * FROM sakila.film
+	WHERE release_year = 2010;
+/*No films were released in 2010*/
+
+/*18)Return the full name of the staff member – in a column named full_name – with the ID of 1.*/
+SELECT * FROM sakila.staff;		/*first_name, last_name*/
+
+SELECT full_name FROM sakila.staff
+WHERE full_name=(
+    SELECT first_name, last_name
+    FROM sakila.staff
+    WHERE staff_id=1
+);
+/* doesn't work :( */
+
+/*19)Retrieve all movies that Fred Costner has appeared in.*/
+SELECT * FROM sakila.film;				/*film_id, title*/
+SELECT * FROM sakila.film_actor;		/*actor_id, film_id*/
+SELECT * FROM sakila.actor;				/*actor_id, first_name, last_name*/
+
+SELECT f.title 
+	FROM sakila.film f
+		INNER JOIN sakila.film_actor fa ON fa.film_id = f.film_id
+		INNER JOIN sakila.actor a ON a.actor_id = fa.actor_id
+	WHERE a.first_name = 'Fred' AND a.last_name = 'Costner';
+
+/*20)Find out which location has the most copies of BUCKET BROTHERHOOD.*/
+SELECT * FROM sakila.inventory;			/*film_id, store_id, inventory_id*/
+SELECT * FROM sakila.store;				/*store_id*/
+SELECT * FROM sakila.film;				/*film_id*/
+
+SELECT COUNT(i.film_id), s.store_id
+	FROM sakila.inventory i
+		INNER JOIN sakila.film f ON f.film_id = i.film_id
+		INNER JOIN sakila.store s ON s.store_id = i.store_id
+	WHERE f.title = 'BUCKET BROTHERHOOD'
+	GROUP BY s.store_id;
+
+/*Store 1 and 2 have the same number of copies (4)*/
+
+/*21)How many distinct countries are there?*/
+SELECT COUNT(DISTINCT country) FROM sakila.country;
+/*Answer: 109*/
+
+/*22)What are the names of all the languages in the database (sorted alphabetically)?*/
+SELECT * FROM sakila.language
+	ORDER BY name ASC;
+
+/*23)Return the full names (first and last) of actors with “son” in their last name, ordered by their first name. */
+SELECT first_name, last_name FROM sakila.actor
+	WHERE last_name LIKE '%son%'
+	ORDER BY first_name ASC;
